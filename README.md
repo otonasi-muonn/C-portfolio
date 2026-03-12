@@ -19,6 +19,18 @@
   - **Windows の場合**: エクスプローラーから `setup.bat` をダブルクリックして実行します。
   - **Mac / Linux の場合**: ターミナルで `chmod +x setup.sh && ./setup.sh` を実行します。
   *(※実行完了後、セットアップスクリプトは自動的に自壊してリポジトリから消去されます)*
+
+注意: このリポジトリは UTF-8 を標準で想定しています。Windows 環境で UTF-8 をそのまま使いたい場合、`setup.ps1`（PowerShell）を用意しました。
+
+- **Windows で UTF-8 を利用する推奨手順**:
+  1. PowerShell を管理者ではない通常ユーザーで開きます。
+  2. このリポジトリのルートで以下を実行します。
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup.ps1
+```
+  3. プロンプトに従って `1` または `2` を入力してください。
+
+  備考: すでに Windows の「Beta: Use Unicode UTF-8」を有効にしている場合でも、再起動やサインアウトが必要なことがあります。
 - [ ] **ラベルの移行**: Issueのラベルを引き継ぐため、ターミナルで以下のコマンドを実行してください（※要 GitHub CLI）。
   ```bash
   gh label clone otonasi-muonn/template-repo --force
