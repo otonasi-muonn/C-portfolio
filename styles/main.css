@@ -1,0 +1,370 @@
+/* ===== リセット・基本設定 ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* カラーパレット */
+  --color-bg:       #0d1117;
+  --color-surface:  #161b22;
+  --color-border:   #30363d;
+  --color-text:     #e6edf3;
+  --color-text-sub: #8b949e;
+  --color-accent:   #58a6ff;
+  --color-accent-hover: #79c0ff;
+  --color-tag:      #1f6feb;
+
+  /* フォント */
+  --font-sans: "Inter", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  /* スペーシング */
+  --space-xs:  0.25rem;
+  --space-sm:  0.5rem;
+  --space-md:  1rem;
+  --space-lg:  2rem;
+  --space-xl:  4rem;
+
+  /* レイアウト */
+  --max-width: 64rem;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+/* ===== レイアウト ===== */
+.section {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.section-title {
+  font-size: 1.75rem;
+  font-family: var(--font-mono);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--color-accent);
+  display: inline-block;
+}
+
+/* ===== ヘッダー・ナビ ===== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.global-nav {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+}
+
+.nav-logo {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.nav-logo:hover {
+  color: var(--color-accent);
+}
+
+.nav-links {
+  display: flex;
+  gap: var(--space-lg);
+  list-style: none;
+}
+
+.nav-links a {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-sub);
+  transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+  color: var(--color-accent);
+}
+
+/* ===== プロフィール ===== */
+.profile {
+  margin-bottom: var(--space-lg);
+}
+
+.profile-name {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+
+.profile-affiliation {
+  color: var(--color-text-sub);
+  font-size: 0.9rem;
+  margin-bottom: var(--space-sm);
+}
+
+.profile-tagline {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--color-accent);
+  margin-bottom: var(--space-md);
+}
+
+.profile-bio {
+  max-width: 40rem;
+  color: var(--color-text-sub);
+  line-height: 1.8;
+}
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  list-style: none;
+}
+
+.social-link {
+  display: inline-block;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--color-text-sub);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.social-link:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ===== スキル ===== */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--space-md);
+}
+
+.skill-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: var(--space-md);
+  transition: border-color 0.2s ease;
+}
+
+.skill-card:hover {
+  border-color: var(--color-accent);
+}
+
+.skill-name {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  margin-bottom: var(--space-xs);
+}
+
+.skill-level {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  background-color: var(--color-tag);
+  border-radius: 12px;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+}
+
+.skill-desc {
+  font-size: 0.85rem;
+  color: var(--color-text-sub);
+}
+
+/* ===== キャリアタイムライン ===== */
+.career-section {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-lg) 0;
+}
+
+.timeline {
+  position: relative;
+  padding-left: var(--space-lg);
+  border-left: 2px solid var(--color-border);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: var(--space-lg);
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * var(--space-lg) - 5px);
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  border: 2px solid var(--color-bg);
+}
+
+.timeline-date {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-accent);
+}
+
+.timeline-title {
+  font-size: 1rem;
+  margin: var(--space-xs) 0;
+}
+
+.timeline-desc {
+  font-size: 0.85rem;
+  color: var(--color-text-sub);
+}
+
+/* ===== プロジェクト ===== */
+.projects-section {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-lg);
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: var(--space-md);
+}
+
+.project-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: var(--space-md);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.project-card:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.project-title {
+  font-size: 1rem;
+  margin-bottom: var(--space-sm);
+}
+
+.project-title a {
+  color: var(--color-text);
+}
+
+.project-title a:hover {
+  color: var(--color-accent);
+}
+
+.project-meta {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+  font-size: 0.8rem;
+}
+
+.project-period {
+  font-family: var(--font-mono);
+  color: var(--color-text-sub);
+}
+
+.project-category {
+  padding: 1px 8px;
+  background-color: var(--color-tag);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: var(--color-text);
+}
+
+.project-desc {
+  font-size: 0.85rem;
+  color: var(--color-text-sub);
+}
+
+/* ===== フッター ===== */
+.site-footer {
+  text-align: center;
+  padding: var(--space-xl) var(--space-lg);
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-xl);
+}
+
+.footer-generated {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--color-accent);
+  margin-bottom: var(--space-xs);
+}
+
+.footer-build {
+  font-size: 0.75rem;
+  color: var(--color-text-sub);
+}
+
+/* ===== レスポンシブ ===== */
+@media (max-width: 768px) {
+  .section {
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .global-nav {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .nav-links {
+    gap: var(--space-md);
+  }
+
+  .profile-name {
+    font-size: 1.5rem;
+  }
+
+  .skills-grid,
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .career-section,
+  .projects-section {
+    padding: var(--space-md);
+  }
+}
