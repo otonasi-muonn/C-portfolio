@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include "render.h"
@@ -37,14 +38,60 @@ static void esc(const char *src, char *buf, size_t buf_size) {
   html_escape(src ? src : "", buf, buf_size);
 }
 
+/* ---- ヘルパー: snprintf の戻り値を必ず検証する ---- */
+static int checked_snprintf(char *buf, size_t buf_size,
+                            const char *context, const char *fmt, ...) {
+  int ret;
+  va_list args;
+
+  if (!buf || buf_size == 0 || !context || !fmt) {
+    fprintf(stderr, "エラー: checked_snprintf の引数が不正です\n");
+    return 0;
+  }
+
+  va_start(args, fmt);
+  ret = vsnprintf(buf, buf_size, fmt, args);
+  va_end(args);
+
+  if (ret < 0) {
+    fprintf(stderr, "エラー: %s の snprintf で失敗しました\n", context);
+    buf[0] = '\0';
+    return 0;
+  }
+
+  if ((size_t)ret >= buf_size) {
+    fprintf(stderr,
+            "エラー: %s の snprintf がバッファ上限を超えました "
+            "(buf=%zu, required=%d)\n",
+            context, buf_size, ret);
+    buf[buf_size - 1] = '\0';
+    return 0;
+  }
+
+  return 1;
+}
+
+/* ---- ヘルパー: カテゴリの代表インデックスを取得 ---- */
+static size_t category_group_index(const Project *projects, size_t current_index) {
+  const char *current = projects[current_index].category ?
+                        projects[current_index].category : "";
+  for (size_t i = 0; i < current_index; i++) {
+    const char *prev = projects[i].category ? projects[i].category : "";
+    if (strcmp(prev, current) == 0) return i;
+  }
+  return current_index;
+}
+
 /* ---- <head> ---- */
 void render_head(FILE *fp, const SiteConfig *config) {
-  char title[ESC_SIZE], desc[ESC_SIZE];
+  char title[ESC_SIZE], desc[ESC_SIZE], css[ESC_SIZE];
+  char buf[BUF_SIZE];
+
   esc(config->title, title, sizeof(title));
   esc(config->description, desc, sizeof(desc));
+  esc(config->css_path, css, sizeof(css));
 
-  char buf[BUF_SIZE];
-  snprintf(buf, sizeof(buf),
+  if (!checked_snprintf(buf, sizeof(buf), "render_head",
     "<head>\n"
     "  <meta charset=\"UTF-8\">\n"
     "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
@@ -52,17 +99,20 @@ void render_head(FILE *fp, const SiteConfig *config) {
     "  <title>%s</title>\n"
     "  <link rel=\"stylesheet\" href=\"%s\">\n"
     "</head>\n",
-    desc, title, config->css_path);
+    desc, title, css)) {
+    return;
+  }
   fputs(buf, fp);
 }
 
 /* ---- ヘッダー・ナビゲーション ---- */
 void render_header(FILE *fp, const SiteConfig *config) {
   char title[ESC_SIZE];
+  char buf[BUF_SIZE];
+
   esc(config->title, title, sizeof(title));
 
-  char buf[BUF_SIZE];
-  snprintf(buf, sizeof(buf),
+  if (!checked_snprintf(buf, sizeof(buf), "render_header",
     "<header class=\"site-header\">\n"
     "  <nav class=\"global-nav\">\n"
     "    <a href=\"#\" class=\"nav-logo\">%s</a>\n"
@@ -73,7 +123,9 @@ void render_header(FILE *fp, const SiteConfig *config) {
     "    </ul>\n"
     "  </nav>\n"
     "</header>\n",
-    title);
+    title)) {
+    return;
+  }
   fputs(buf, fp);
 }
 
@@ -81,13 +133,14 @@ void render_header(FILE *fp, const SiteConfig *config) {
 void render_profile(FILE *fp, const Profile *prof,
                     const SocialLink *links, size_t links_count) {
   char name[ESC_SIZE], aff[ESC_SIZE], tag[ESC_SIZE], bio[ESC_SIZE];
+  char buf[BUF_SIZE];
+
   esc(prof->name, name, sizeof(name));
   esc(prof->affiliation, aff, sizeof(aff));
   esc(prof->tagline, tag, sizeof(tag));
   esc(prof->bio, bio, sizeof(bio));
 
-  char buf[BUF_SIZE];
-  snprintf(buf, sizeof(buf),
+  if (!checked_snprintf(buf, sizeof(buf), "render_profile.header",
     "<section id=\"about\" class=\"section\">\n"
     "  <h2 class=\"section-title\">About</h2>\n"
     "  <div class=\"profile\">\n"
@@ -96,20 +149,24 @@ void render_profile(FILE *fp, const Profile *prof,
     "    <p class=\"profile-tagline\">%s</p>\n"
     "    <p class=\"profile-bio\">%s</p>\n"
     "  </div>\n",
-    name, aff, tag, bio);
+    name, aff, tag, bio)) {
+    return;
+  }
   fputs(buf, fp);
 
-  /* ソーシャルリンク */
   fputs("  <ul class=\"social-links\">\n", fp);
   for (size_t i = 0; i < links_count; i++) {
     char svc[ESC_SIZE], lbl[ESC_SIZE], url[ESC_SIZE];
     esc(links[i].service, svc, sizeof(svc));
     esc(links[i].label, lbl, sizeof(lbl));
     esc(links[i].url, url, sizeof(url));
-    snprintf(buf, sizeof(buf),
+
+    if (!checked_snprintf(buf, sizeof(buf), "render_profile.link",
       "    <li><a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\""
       " class=\"social-link\">%s - %s</a></li>\n",
-      url, svc, lbl);
+      url, svc, lbl)) {
+      continue;
+    }
     fputs(buf, fp);
   }
   fputs("  </ul>\n</section>\n", fp);
@@ -117,23 +174,27 @@ void render_profile(FILE *fp, const Profile *prof,
 
 /* ---- スキルセクション ---- */
 void render_skills(FILE *fp, const Skill *skills, size_t count) {
+  char buf[BUF_SIZE];
+
   fputs("<section id=\"skills\" class=\"section\">\n"
         "  <h2 class=\"section-title\">Skills</h2>\n"
         "  <div class=\"skills-grid\">\n", fp);
 
-  char buf[BUF_SIZE];
   for (size_t i = 0; i < count; i++) {
     char name[ESC_SIZE], lvl[ESC_SIZE], desc[ESC_SIZE];
     esc(skills[i].name, name, sizeof(name));
     esc(skills[i].level, lvl, sizeof(lvl));
     esc(skills[i].description, desc, sizeof(desc));
-    snprintf(buf, sizeof(buf),
+
+    if (!checked_snprintf(buf, sizeof(buf), "render_skills.item",
       "    <div class=\"skill-card\">\n"
       "      <h3 class=\"skill-name\">%s</h3>\n"
       "      <span class=\"skill-level\">%s</span>\n"
       "      <p class=\"skill-desc\">%s</p>\n"
       "    </div>\n",
-      name, lvl, desc);
+      name, lvl, desc)) {
+      continue;
+    }
     fputs(buf, fp);
   }
   fputs("  </div>\n</section>\n", fp);
@@ -141,23 +202,27 @@ void render_skills(FILE *fp, const Skill *skills, size_t count) {
 
 /* ---- キャリアタイムライン ---- */
 void render_career(FILE *fp, const CareerEvent *events, size_t count) {
+  char buf[BUF_SIZE];
+
   fputs("<section class=\"career-section\">\n"
         "  <h2 class=\"section-title\">Career</h2>\n"
         "  <div class=\"timeline\">\n", fp);
 
-  char buf[BUF_SIZE];
   for (size_t i = 0; i < count; i++) {
     char date[ESC_SIZE], title[ESC_SIZE], desc[ESC_SIZE];
     esc(events[i].date, date, sizeof(date));
     esc(events[i].title, title, sizeof(title));
     esc(events[i].description, desc, sizeof(desc));
-    snprintf(buf, sizeof(buf),
+
+    if (!checked_snprintf(buf, sizeof(buf), "render_career.item",
       "    <div class=\"timeline-item\">\n"
       "      <span class=\"timeline-date\">%s</span>\n"
       "      <h3 class=\"timeline-title\">%s</h3>\n"
       "      <p class=\"timeline-desc\">%s</p>\n"
       "    </div>\n",
-      date, title, desc);
+      date, title, desc)) {
+      continue;
+    }
     fputs(buf, fp);
   }
   fputs("  </div>\n</section>\n", fp);
@@ -165,44 +230,119 @@ void render_career(FILE *fp, const CareerEvent *events, size_t count) {
 
 /* ---- プロジェクト一覧 ---- */
 void render_projects(FILE *fp, const Project *projects, size_t count) {
+  char buf[BUF_SIZE];
+
   fputs("<section class=\"projects-section\">\n"
         "  <h2 class=\"section-title\">Projects</h2>\n"
-        "  <div class=\"projects-grid\">\n", fp);
+        "  <div class=\"filter-container\">\n", fp);
 
-  char buf[BUF_SIZE];
+  fputs("    <div class=\"project-filters\" role=\"radiogroup\""
+        " aria-label=\"プロジェクトカテゴリフィルター\">\n"
+        "      <input class=\"filter-radio\" type=\"radio\""
+        " name=\"project-filter\" id=\"filter-all\" checked>\n"
+        "      <label class=\"filter-label\" for=\"filter-all\">すべて</label>\n", fp);
+
   for (size_t i = 0; i < count; i++) {
+    size_t group = category_group_index(projects, i);
+    char cat[ESC_SIZE], filter_id[ESC_SIZE];
+    if (group != i) continue;
+
+    esc(projects[i].category, cat, sizeof(cat));
+    if (!checked_snprintf(filter_id, sizeof(filter_id),
+                          "render_projects.filter_id",
+                          "filter-cat-%zu", group)) {
+      continue;
+    }
+    if (!checked_snprintf(buf, sizeof(buf), "render_projects.filter_control",
+      "      <input class=\"filter-radio\" type=\"radio\""
+      " name=\"project-filter\" id=\"%s\">\n"
+      "      <label class=\"filter-label\" for=\"%s\">%s</label>\n",
+      filter_id, filter_id, cat)) {
+      continue;
+    }
+    fputs(buf, fp);
+  }
+  fputs("    </div>\n", fp);
+
+  fputs("    <style>\n", fp);
+  for (size_t i = 0; i < count; i++) {
+    size_t group = category_group_index(projects, i);
+    char filter_id[ESC_SIZE];
+    if (group != i) continue;
+
+    if (!checked_snprintf(filter_id, sizeof(filter_id),
+                          "render_projects.filter_rule_id",
+                          "filter-cat-%zu", group)) {
+      continue;
+    }
+    if (!checked_snprintf(buf, sizeof(buf), "render_projects.filter_rule",
+      ".filter-container:has(#%s:checked) .project-card:not(.category-%zu) {"
+      " display: none; }\n",
+      filter_id, group)) {
+      continue;
+    }
+    fputs(buf, fp);
+  }
+  fputs("    </style>\n", fp);
+
+  fputs("    <div class=\"projects-grid\">\n", fp);
+  for (size_t i = 0; i < count; i++) {
+    size_t group = category_group_index(projects, i);
     char title[ESC_SIZE], url[ESC_SIZE], period[ESC_SIZE];
-    char cat[ESC_SIZE], desc[ESC_SIZE];
+    char cat[ESC_SIZE], desc[ESC_SIZE], detail_id[ESC_SIZE];
+
     esc(projects[i].title, title, sizeof(title));
     esc(projects[i].url, url, sizeof(url));
     esc(projects[i].period, period, sizeof(period));
     esc(projects[i].category, cat, sizeof(cat));
     esc(projects[i].description, desc, sizeof(desc));
-    snprintf(buf, sizeof(buf),
-      "    <article class=\"project-card\" data-category=\"%s\">\n"
-      "      <h3 class=\"project-title\">\n"
-      "        <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>\n"
-      "      </h3>\n"
-      "      <div class=\"project-meta\">\n"
-      "        <span class=\"project-period\">%s</span>\n"
-      "        <span class=\"project-category\">%s</span>\n"
-      "      </div>\n"
-      "      <p class=\"project-desc\">%s</p>\n"
-      "    </article>\n",
-      cat, url, title, period, cat, desc);
+
+    if (!checked_snprintf(detail_id, sizeof(detail_id),
+                          "render_projects.detail_id",
+                          "detail-toggle-%zu", i)) {
+      continue;
+    }
+
+    if (!checked_snprintf(buf, sizeof(buf), "render_projects.card",
+      "      <article class=\"project-card category-%zu\" data-category=\"%s\">\n"
+      "        <h3 class=\"project-title\">\n"
+      "          <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s</a>\n"
+      "        </h3>\n"
+      "        <div class=\"project-meta\">\n"
+      "          <span class=\"project-period\">%s</span>\n"
+      "          <span class=\"project-category\">%s</span>\n"
+      "        </div>\n"
+      "        <input type=\"checkbox\" class=\"detail-toggle\" id=\"%s\">\n"
+      "        <label class=\"detail-toggle-label\" for=\"%s\">\n"
+      "          <span class=\"detail-open\">詳細を見る</span>\n"
+      "          <span class=\"detail-close\">閉じる</span>\n"
+      "        </label>\n"
+      "        <div class=\"project-detail-wrapper\">\n"
+      "          <div class=\"project-detail-inner\">\n"
+      "            <p class=\"project-desc\">%s</p>\n"
+      "          </div>\n"
+      "        </div>\n"
+      "      </article>\n",
+      group, cat, url, title, period, cat, detail_id, detail_id, desc)) {
+      continue;
+    }
     fputs(buf, fp);
   }
-  fputs("  </div>\n</section>\n", fp);
+  fputs("    </div>\n"
+        "  </div>\n"
+        "</section>\n", fp);
 }
 
 /* ---- フッター ---- */
 void render_footer(FILE *fp) {
   char buf[BUF_SIZE];
-  snprintf(buf, sizeof(buf),
+  if (!checked_snprintf(buf, sizeof(buf), "render_footer",
     "<footer class=\"site-footer\">\n"
     "  <p class=\"footer-generated\">Generated by pure C</p>\n"
     "  <p class=\"footer-build\">Build: %s %s</p>\n"
     "</footer>\n",
-    __DATE__, __TIME__);
+    __DATE__, __TIME__)) {
+    return;
+  }
   fputs(buf, fp);
 }
