@@ -26,12 +26,14 @@ typedef struct {
   const char *label;
 } SocialLink;
 
-/* 技術スタック */
+/* 技術スタック・ステータス（ウィジェット＆外部連携） */
 typedef struct {
-  const char *name;
-  const char *level;
   const char *description;
-} Skill;
+  const char *github_stats_url;
+  const char *github_langs_url;
+  const char *github_productive_url; /* 先輩が使っていた活動時間グラフ */
+  const char *gitty_url;
+} SkillSection;
 
 /* キャリア・学習歴イベント */
 typedef struct {
@@ -54,8 +56,7 @@ extern const SiteConfig site_config;
 extern const Profile profile;
 extern const SocialLink social_links[];
 extern const size_t social_links_count;
-extern const Skill skills[];
-extern const size_t skills_count;
+extern const SkillSection skill_section;
 extern const CareerEvent career_events[];
 extern const size_t career_events_count;
 extern const Project projects[];

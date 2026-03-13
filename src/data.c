@@ -25,26 +25,18 @@ const SocialLink social_links[] = {
   { .service = "Gitty",   .url = "https://gitty.example.com/u", .label = "Gitty Profile" },
 };
 const size_t social_links_count = sizeof(social_links) / sizeof(social_links[0]);
-
-/* スキル */
-const Skill skills[] = {
-  { .name = "C言語",
-    .level = "上級",
-    .description = "ポインタ操作、メモリ管理、構造体設計を用いたシステムプログラミング" },
-  { .name = "HTML / CSS",
-    .level = "中級",
-    .description = "セマンティックHTML、CSSカスタムプロパティ、レスポンシブデザイン" },
-  { .name = "Git / GitHub",
-    .level = "中級",
-    .description = "ブランチ戦略、GitHub Actions による CI/CD パイプライン構築" },
-  { .name = "Linux",
-    .level = "中級",
-    .description = "シェルスクリプト、Makefile によるビルド自動化" },
-  { .name = "Python",
-    .level = "初級",
-    .description = "データ処理スクリプト、自動化ツールの作成" },
+/* スキル・ステータス情報 */
+const SkillSection skill_section = {
+  .description = "私が使用している言語の割合や活動時間、客観的なコーディング分析については、以下のステータスとGittyプロフィールをご覧ください。",
+  /* GitHub Readme Stats (総合ステータス) */
+  .github_stats_url = "https://github-readme-stats.vercel.app/api?username=otonasi-muonn&show_icons=true&theme=github_dark&rank_icon=github&hide_border=true&bg_color=161b22",
+  /* Top Languages (言語割合) */
+  .github_langs_url = "https://github-readme-stats.vercel.app/api/top-langs/?username=otonasi-muonn&layout=compact&theme=github_dark&hide_border=true&bg_color=161b22",
+  /* Profile Summary Cards (活動時間帯グラフ) */
+  .github_productive_url = "https://github-profile-summary-cards.vercel.app/api/cards/productive-time?username=otonasi-muonn&theme=github_dark&utcOffset=9",
+  /* Gittyへのリンク */
+  .gitty_url = "https://gitty-code.com/user/otonasi-muonn"
 };
-const size_t skills_count = sizeof(skills) / sizeof(skills[0]);
 
 /* キャリア・学習歴 */
 const CareerEvent career_events[] = {

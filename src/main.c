@@ -23,7 +23,7 @@ int main(void) {
 
   fputs("<main>\n", fp);
   render_profile(fp, &profile, social_links, social_links_count);
-  render_skills(fp, skills, skills_count);
+  render_skills(fp, &skill_section);
 
   /* #works セクション（キャリア + プロジェクト） */
   fputs("<section id=\"works\" class=\"section\">\n"

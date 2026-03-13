@@ -172,32 +172,38 @@ void render_profile(FILE *fp, const Profile *prof,
   fputs("  </ul>\n</section>\n", fp);
 }
 
-/* ---- スキルセクション ---- */
-void render_skills(FILE *fp, const Skill *skills, size_t count) {
+/* ---- スキル・ステータスセクション ---- */
+void render_skills(FILE *fp, const SkillSection *skill) {
   char buf[BUF_SIZE];
+  char desc[ESC_SIZE], stats[ESC_SIZE], langs[ESC_SIZE], prod[ESC_SIZE], gitty[ESC_SIZE];
+  
+  esc(skill->description, desc, sizeof(desc));
+  esc(skill->github_stats_url, stats, sizeof(stats));
+  esc(skill->github_langs_url, langs, sizeof(langs));
+  esc(skill->github_productive_url, prod, sizeof(prod));
+  esc(skill->gitty_url, gitty, sizeof(gitty));
 
-  fputs("<section id=\"skills\" class=\"section\">\n"
-        "  <h2 class=\"section-title\">Skills</h2>\n"
-        "  <div class=\"skills-grid\">\n", fp);
-
-  for (size_t i = 0; i < count; i++) {
-    char name[ESC_SIZE], lvl[ESC_SIZE], desc[ESC_SIZE];
-    esc(skills[i].name, name, sizeof(name));
-    esc(skills[i].level, lvl, sizeof(lvl));
-    esc(skills[i].description, desc, sizeof(desc));
-
-    if (!checked_snprintf(buf, sizeof(buf), "render_skills.item",
-      "    <div class=\"skill-card\">\n"
-      "      <h3 class=\"skill-name\">%s</h3>\n"
-      "      <span class=\"skill-level\">%s</span>\n"
-      "      <p class=\"skill-desc\">%s</p>\n"
-      "    </div>\n",
-      name, lvl, desc)) {
-      continue;
-    }
-    fputs(buf, fp);
+  if (!checked_snprintf(buf, sizeof(buf), "render_skills",
+    "<section id=\"skills\" class=\"section\">\n"
+    "  <h2 class=\"section-title\">Skills & Status</h2>\n"
+    "  <p class=\"skill-desc\" style=\"margin-bottom: var(--space-md);\">%s</p>\n"
+    "  \n"
+    "  <div style=\"display: flex; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg); align-items: flex-start;\">\n"
+    "    <img src=\"%s\" alt=\"GitHub Stats\" style=\"max-width: 100%%; border-radius: 8px;\">\n"
+    "    <img src=\"%s\" alt=\"Top Languages\" style=\"max-width: 100%%; border-radius: 8px;\">\n"
+    "    <img src=\"%s\" alt=\"Productive Time\" style=\"max-width: 100%%; border-radius: 8px;\">\n"
+    "  </div>\n"
+    "  \n"
+    "  <div class=\"skill-card\" style=\"display: inline-block;\">\n"
+    "    <h3 class=\"skill-name\">Gitty Profile</h3>\n"
+    "    <p class=\"skill-desc\" style=\"margin-bottom: var(--space-sm);\">詳細なコーディング分析はこちら</p>\n"
+    "    <a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"social-link\">Gitty で開く</a>\n"
+    "  </div>\n"
+    "</section>\n",
+    desc, stats, langs, prod, gitty)) {
+    return;
   }
-  fputs("  </div>\n</section>\n", fp);
+  fputs(buf, fp);
 }
 
 /* ---- キャリアタイムライン ---- */

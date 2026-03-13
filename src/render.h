@@ -12,7 +12,7 @@ void render_head(FILE *fp, const SiteConfig *config);
 void render_header(FILE *fp, const SiteConfig *config);
 void render_profile(FILE *fp, const Profile *prof,
                     const SocialLink *links, size_t links_count);
-void render_skills(FILE *fp, const Skill *skills, size_t count);
+void render_skills(FILE *fp, const SkillSection *skill);
 void render_career(FILE *fp, const CareerEvent *events, size_t count);
 void render_projects(FILE *fp, const Project *projects, size_t count);
 void render_footer(FILE *fp);
