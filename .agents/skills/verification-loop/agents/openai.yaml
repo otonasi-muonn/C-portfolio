@@ -1,0 +1,8 @@
+interface:
+  display_name: "Verification Loop (C-portfolio)"
+  short_description: "make all中心の最終検証"
+  brand_color: "#10B981"
+  default_prompt: "C-portfolio向けに make all と生成物確認で検証して"
+policy:
+  allow_implicit_invocation: true
+

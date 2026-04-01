@@ -1,69 +1,43 @@
-# GitHub Copilot Instructions
+<rules>
+# Project Core Rules & Language Settings
 
-## 🎯 Project Specific Rules (プロジェクト固有のルール)
-<!-- 
-新しくプロジェクトを開始する際、ここにこのプロジェクト独自のルールやコーディング規約を追記してください。
-（例：状態管理にはZustandを使用すること、APIの呼び出しは常に src/lib/api.ts を経由すること、など）
--->
-- 
+## 1. Language & Output Control (CRITICAL)
+* All outputs (responses, documentation, error explanations, code comments, commit messages) MUST be in Japanese.
+* When asking the user for permission to execute a command, you MUST briefly explain its purpose and content in Japanese before asking for confirmation.
+* Define the "project root" as the nearest ancestor directory containing `.git`, `Dockerfile`, or `docker-compose.yml`. If none exist, use the current directory.
+* Save all generated artifacts and documents in the `docs/` folder directly under the project root, strictly using the naming convention: `YYYYMMDD_topic_name.md`.
+* IMPORTANT CONTEXT SAVING: After generating and writing a document, ONLY output the completion status and the file path in the chat. DO NOT output the full content of the document in the chat window.
 
----
+## 2. Workflow Orchestration
+* **Plan Node Default**: Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions). If requirements are ambiguous, use the AskUserQuestion tool to interview the user BEFORE planning. If something goes sideways, STOP and re-plan immediately. Write detailed specs upfront to reduce ambiguity.
+* **Subagent Strategy**: Use subagents liberally to keep the main context window clean. Offload research, exploration, and parallel analysis to subagents. For complex problems, throw more compute at it via subagents. One task per subagent for focused execution.
+* **Self-Improvement Loop**: After ANY correction from the user: update `tasks/lessons.md` with the pattern. Write rules for yourself that prevent the same mistake. Ruthlessly iterate on these lessons until the mistake rate drops. Review lessons at session start for the relevant project.
+* **Verification Before Done**: Never mark a task complete without proving it works. Diff behavior between main and your changes when relevant. Ask yourself: "Would a staff engineer approve this?" Run tests, check logs, demonstrate correctness.
+* **Demand Elegance (Balanced)**: For non-trivial changes: pause and ask "is there a more elegant way?". If a fix feels hacky: "Knowing everything I know now, implement the elegant solution". Skip this for simple, obvious fixes – don't over-engineer. Challenge your own work before presenting it.
+* **Autonomous Bug Fixing**: When given a bug report: just fix it. Don't ask for hand-holding. Point at logs, errors, failing tests – then resolve them. Zero context switching required from the user. Go fix failing CI tests without being told how.
 
-## 🤖 AI Assistant Directives (AIへの基本指示)
-コードを生成・提案する際は、以下のルールに必ず従ってください。
+## 3. Task Management
+When executing tasks, strictly follow these steps:
+1. **Plan First**: Write phase-wise gated plan to `tasks/todo.md` with checkable items.
+2. **Verify Plan**: Check in before starting implementation.
+3. **Track Progress**: Mark items complete as you go.
+4. **Explain Changes**: High-level summary at each step (in Japanese).
+5. **Document Results**: Add review section to `tasks/todo.md`.
+6. **Capture Lessons**: Update `tasks/lessons.md` after corrections.
 
-1. **言語設定**: 回答、コード内のコメント、コミットメッセージは必ず**日本語**で出力してください。
-2. **設計駆動開発**: 実装を始める前に、必ず `docs/` ディレクトリ配下にある関連ドキュメント（機能一覧、DB設計、権限設計など）を参照し、その設計に準拠したコードを生成してください。
-3. **コーディングスタイル**: 簡潔で可読性の高いコードを心がけ、DRY原則やYAGNI原則を意識してください。エラーハンドリングは適切に行い、握りつぶさないようにしてください。
+## 4. Core Principles
+* **Simplicity First**: Make every change as simple as possible. Impact minimal code.
+* **Security First**: NEVER hardcode API keys, passwords, or tokens. Always use environment variables (`.env`) and follow secure coding practices.
+* **Meaningful Tests**: Write tests covering happy paths, error paths, and boundary values. Do not write tautological (always passing) tests.
+* **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
+* **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+* **YAGNI (You Aren't Gonna Need It)**: Treat implementation of features not included in the Acceptance Criteria as defects. Do not write code or tests for unrequested features.
+* **Deletion Priority**: Before writing new code, always consider if the problem can be solved by refactoring or deleting existing code.
 
----
-
-## 📦 Repository Context (リポジトリの前提知識)
-
-### Repository Purpose
-This is a **Japanese-language GitHub repository template**. It is not a runnable application — it provides a starting structure for new projects. When used as a template, contributors run `setup.sh` to select a documentation tier and begin customizing.
-
-### Initial Setup Flow
-After creating a new repo from this template:
-1. Run `chmod +x setup.sh && ./setup.sh` — interactively selects the documentation set and removes itself when done
-2. Clone issue labels from the source repo: `gh label clone otonasi-muonn/template-repo --force`
-3. The script removes one of the two doc tiers (`docs/small/` or `docs/standard/`) and promotes the chosen tier's contents to `docs/`
-
-### Documentation Tiers
-- **Small** (`docs/small/`): Single-page design doc (`01_api-design.md`, `02_db-design.md`, `03_security.md`, `04_ai-design.md`, `05_deployment.md`)
-- **Standard** (`docs/standard/`): Full design doc set — feature list, tech stack, screen flow, permissions, ERD, directory structure, infrastructure, logging, schedule/issues
-After `setup.sh` runs, these subdirectories are gone and the chosen docs live directly under `docs/`.
-
-### Formatting Conventions (EditorConfig)
-- Default: UTF-8, LF line endings, 2-space indent, trim trailing whitespace, final newline
-- Python files: 4-space indent
-- Go files and Makefiles: tab indent
-- Markdown files: trailing whitespace is **preserved** (two trailing spaces = line break)
-
-### Branch Naming
-From CONTRIBUTING.md:
-- Features: `feature/<description>` (e.g., `feature/add-login`)
-- Bug fixes: `bugfix/<description>` (e.g., `bugfix/fix-header`)
-
-### Pull Requests
-Use the PR template at `.github/PULL_REQUEST_TEMPLATE.md`. Sections (in Japanese):
-1. 背景・目的 — background/purpose; link related issues with `Close #N`
-2. 変更内容 — bullet list of changes
-3. 動作確認・テスト — verification steps; attach screenshots for UI changes
-4. レビューポイント — design concerns or performance questions for reviewers
-5. チェックリスト — build/tests pass, docs updated, no debug code left
-
-### Issues
-Five templates under `.github/ISSUE_TEMPLATE/`:
-| File | Type | Label |
-|------|------|-------|
-| `01_task.yml` | Task | — |
-| `02_question.yml` | Question | — |
-| `03_epic.yml` | Epic | — |
-| `04_bug_report.yml` | Bug | `bug` |
-| `05_feature_request.yml` | Feature request | — |
-
-### GitHub Actions
-- **stale.yml**: Issues and PRs go stale after 60 days of inactivity, close after 7 more days
-- **labeler.yml**: Auto-labels PRs — `documentation` for changes to `docs/**` or `README.md`; `bug` for paths matching `*bug*` or `*fix*`
-- **greetings.yml**: Automated greeting on first issue/PR
+## 5. Project Specific Commands (Essential)
+When executing tests, builds, or running the application, strictly use the following commands:
+* **Install**: `npm install` (or your specific install command)
+* **Build**: `npm run build` (or your specific build command)
+* **Test**: `npm run test` (or your specific test command)
+* **Lint**: `npm run lint` (or your specific lint command)
+</rules>

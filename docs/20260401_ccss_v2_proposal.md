@@ -17,14 +17,21 @@
 
 コメント欄でも指摘された通り、技術的には「C=バック、CSS=フロント」が正しい。
 
-**真のCCSS v2**はこれを完全に逆転させる：
-- **C言語 → WebAssembly → ブラウザで実行** ＝ 本物のフロントエンド
-- **CSS → 状態・DB・ルーター・通信を担当** ＝ 本物の（？）バックエンド
+**真のCCSS v2**はこれを「逆転」ではなく**責務分離として固定**する：
+- **C言語（WASM）**はフロントエンド実行系として、描画・イベント処理・遷移トリガーを担当
+- **CSS**はバックエンド実行系として、状態管理・データ提供・ルーティング判定・通信発火を担当
+
+### 責務境界（この企画で守るルール）
+
+1. フロントロジックはCに集約する（UI構築、入力処理、表示更新）。
+2. バックロジックはCSSに集約する（状態保持、表示可否判定、外部通知）。
+3. Cから直接`fetch`/`XHR`は呼ばない。外部送信はCSSの`url()`経由を原則とする。
+4. Cは「CSSバックエンドAPI（Custom Properties / hidden controls）」を通じてのみ状態にアクセスする。
 
 ### ゴール
 
 C-portfolioに真のCCSS実装を**追加**し、現行CCSSと切り替えられるようにする。  
-実装後に「真のCCSSを実装してみた」記事をQiitaに投稿する。
+さらに「Cフロント / CSSバック」の責務分離を説明可能な設計として、Qiita記事に落とし込む。
 
 ---
 
@@ -38,10 +45,10 @@ C-portfolioに真のCCSS実装を**追加**し、現行CCSSと切り替えられ
 │  │   C (WASM)      │    │   CSS バックエンド    │    │
 │  │   フロントエンド  │    │                      │    │
 │  │                 │    │  - CSS変数DB          │    │
-│  │  DOM操作        │◄───│  - チェックボックス    │    │
-│  │  ロジック実行    │    │    ルーター           │    │
-│  │  CSSバックから   │    │  - 認証              │    │
-│  │  データ読み取り  │    │  - 狼煙通信          │    │
+│  │  UI描画/再描画   │◄───│  - 変数DB（状態）     │    │
+│  │  入力イベント処理 │    │  - ルーティング判定   │    │
+│  │  画面遷移トリガー │    │  - 表示ゲート判定     │    │
+│  │  CSS API呼び出し │    │  - 狼煙通信発火       │    │
 │  └─────────────────┘    └──────────┬───────────┘    │
 │                                    │ background-image: url()
 └────────────────────────────────────┼────────────────┘
@@ -62,7 +69,7 @@ C-portfolioに真のCCSS実装を**追加**し、現行CCSSと切り替えられ
 
 ## 3. CSS バックエンド仕様（詳細）
 
-CSSがバックエンドとして担う機能は4つ。
+CSSがバックエンドとして担う機能は5つ（DB / ルーター / 表示ゲート / 狼煙通信 / フロント向けAPI公開）。
 
 ### 3-1. CSS変数DB
 
@@ -90,9 +97,10 @@ CSS Custom Propertiesを静的データストアとして使用する。
 }
 ```
 
-**読み取り方法:**  
+**読み取り方法（CSSバックエンドAPI）:**  
 - CSS側: `content: var(--db-user-name)` で表示用に参照
-- C (WASM)側: `getComputedStyle(document.documentElement).getPropertyValue('--db-user-name')` でJSブリッジ経由取得
+- C (WASM)側: `getComputedStyle(document.documentElement).getPropertyValue('--db-user-name')` で取得
+- CはこのAPI経由でのみデータアクセスし、データの正本はCSSに置く
 
 **制約:**  
 - CSS変数はランタイムでの「書き込み」はCSS単体ではできない
@@ -101,73 +109,73 @@ CSS Custom Propertiesを静的データストアとして使用する。
 
 ---
 
-### 3-2. チェックボックスルーター
+### 3-2. CSSルーター（`:target` + `:has`）
 
-ページ遷移・ルーティングをhidden radioボタン ＋ 隣接結合子で実現。
+ページ遷移・ルーティング判定はCSS単体で行う。  
+Cフロントはリンク操作をトリガーするだけで、判定ロジックはCSS側に置く。
 
 ```html
-<!-- index.html: ルーター状態 -->
-<input type="radio" name="route" id="route-home"    checked hidden />
-<input type="radio" name="route" id="route-works"         hidden />
-<input type="radio" name="route" id="route-about"         hidden />
+<nav class="router-nav">
+  <a href="#page-home">Home</a>
+  <a href="#page-works">Works</a>
+  <a href="#page-about">About</a>
+</nav>
 
-<!-- ナビゲーション（CSSで制御） -->
-<label for="route-home">Home</label>
-<label for="route-works">Works</label>
-<label for="route-about">About</label>
-
-<!-- ページコンテンツ -->
-<div class="page" id="page-home">...</div>
-<div class="page" id="page-works">...</div>
-<div class="page" id="page-about">...</div>
+<main class="router-view">
+  <section class="page" id="page-home">...</section>
+  <section class="page" id="page-works">...</section>
+  <section class="page" id="page-about">...</section>
+</main>
 ```
 
 ```css
 /* backend.css: ルーター */
 
-/* 全ページ非表示がデフォルト */
+/* デフォルトはHome表示 */
 .page { display: none; }
+#page-home { display: block; }
 
-/* radioの状態に応じてページ表示 */
-#route-home:checked   ~ * #page-home  { display: block; }
-#route-works:checked  ~ * #page-works { display: block; }
-#route-about:checked  ~ * #page-about { display: block; }
+/* targetがある時はtargetのみ表示 */
+.router-view:has(.page:target) #page-home { display: none; }
+.page:target { display: block; }
 
-/* アクティブなナビリンクのスタイル */
-#route-home:checked   ~ * label[for="route-home"]  { font-weight: bold; }
-#route-works:checked  ~ * label[for="route-works"] { font-weight: bold; }
-#route-about:checked  ~ * label[for="route-about"] { font-weight: bold; }
+/* アクティブナビ表示 */
+body:has(#page-home:target) .router-nav a[href="#page-home"],
+body:has(#page-works:target) .router-nav a[href="#page-works"],
+body:has(#page-about:target) .router-nav a[href="#page-about"] {
+  font-weight: bold;
+}
 ```
 
-**URL連携:**  
-C (WASM) がURLのhashを監視し、対応するradioを `checked` にする。  
-これにより `/#works` のようなURLでも直接遷移できる。
+**責務:**  
+- Cフロント: `window.location.hash` の更新トリガー
+- CSSバック: どのページを表示するかの判定・適用
 
 ---
 
-### 3-3. 認証（CSSチェックボックス認証）
+### 3-3. 表示ゲート（CSSチェックボックス認可）
 
-特定のチェックボックス操作シーケンスを「パスワード」として扱う。
+特定のチェックボックス操作シーケンスを「ゲート条件」として扱う。
 
 ```html
-<!-- 認証チェックボックス群（hidden） -->
+<!-- 表示ゲート用チェックボックス群（hidden） -->
 <input type="checkbox" id="auth-1" hidden />
 <input type="checkbox" id="auth-2" hidden />
 <input type="checkbox" id="auth-3" hidden />
 
-<!-- 管理者専用コンテンツ（デフォルト非表示） -->
+<!-- ゲート通過時のみ表示するコンテンツ（デフォルト非表示） -->
 <div class="admin-content">...</div>
 ```
 
 ```css
-/* backend.css: 認証ロジック */
+/* backend.css: 表示ゲートロジック */
 
-/* auth-1 AND auth-3 がchecked（auth-2はunchecked）で認証成功 */
+/* auth-1 AND auth-3 がchecked（auth-2はunchecked）でゲート通過 */
 #auth-1:checked ~ #auth-2:not(:checked) ~ #auth-3:checked ~ .admin-content {
   display: block;
 }
 
-/* 認証失敗メッセージ */
+/* ゲート未通過メッセージ */
 .auth-failed { display: block; }
 #auth-1:checked ~ #auth-2:not(:checked) ~ #auth-3:checked ~ .auth-failed {
   display: none;
@@ -175,8 +183,8 @@ C (WASM) がURLのhashを監視し、対応するradioを `checked` にする。
 ```
 
 **セキュリティについての正直な評価:**  
-CSSはクライアントサイドで丸見えなので認証として機能しない。  
-これは「CSSバックエンドの認証」というコンセプトの実証であり、実用目的ではない。  
+CSSはクライアントサイドで丸見えなので「認証」にはならない。  
+本仕様はあくまで「表示ゲート（UI権限制御の演出）」の実証であり、実運用の認証機構とは分離する。  
 記事でもこの点を正直に書く。
 
 ---
@@ -189,14 +197,14 @@ CSSのみでサーバーにGETリクエストを送信する。
 /* backend.css: 狼煙通信 */
 
 /* ページ表示時に狼煙を放つ */
-#route-home:checked ~ * #page-home {
+#page-home:target {
   display: block;
-  background-image: url("https://proxmox.example.com/log?event=PAGE_HOME&ts=0");
+  background-image: url("https://proxmox.example.com/log?event=PAGE_HOME_V1");
 }
 
-#route-works:checked ~ * #page-works {
+#page-works:target {
   display: block;
-  background-image: url("https://proxmox.example.com/log?event=PAGE_WORKS&ts=0");
+  background-image: url("https://proxmox.example.com/log?event=PAGE_WORKS_V1");
 }
 
 /* ボタンhover時に狼煙を放つ */
@@ -215,35 +223,45 @@ CSSのみでサーバーにGETリクエストを送信する。
 - **HTTPS必須**: GitHub PagesはHTTPS。Mixed Contentエラーを防ぐためPROXMOXもHTTPS化が必要
 - **CORS**: CSSからのリクエストはCORSの対象外（画像リクエスト扱い）なのでサーバー側のCORS設定は不要
 - **一方向のみ**: レスポンス内容をCSSが読み取ることはできない。あくまで「放つ」だけ
-- **ブラウザキャッシュ**: 同じURLは2回目以降リクエストしない場合あり → `?ts=` パラメータで回避（C WASMからCSSに時刻を書き込む）
+- **ブラウザキャッシュ**: 同じURLは2回目以降リクエストしない場合あり → イベントごとにバージョン付きURLを定義して回避
 - **ブロッカー**: uBlockOriginなどの広告ブロッカーでブロックされる可能性あり
 
 ---
 
 ## 4. C (WASM) フロントエンド仕様
 
-### 役割
+### 役割（Cフロントを主役にする）
 
-- DOMの動的操作（CSSバックの変数DBからデータを読み取り描画）
-- URLハッシュの監視 → チェックボックスルーターとの連携
-- 狼煙通信のタイムスタンプ更新（キャッシュ回避）
-- アニメーション・インタラクション処理
+- UIコンポーネントをCで生成・再描画する（カード、一覧、詳細パネル）
+- キーボード/ポインタ入力をCで処理し、遷移トリガーを発行する
+- CSSバックエンドAPIからデータを読み取り、表示モデルを構築する
+- 画面状態（選択中カード、フォーカス、展開状態）をCの状態機械で管理する
+
+### CSSバックエンドとの接続ルール
+
+Cは以下の2種類だけを使ってCSSバックエンドと通信する。
+
+1. **Read API**: Custom Propertiesの読み取り  
+   `getComputedStyle(...).getPropertyValue("--db-*")`
+2. **Request API**: hidden control / hash の更新  
+   `window.location.hash = ...` や hidden input の `checked` 変更
+
+これにより「判定はCSS、実行はC」の境界を保つ。
 
 ### ビルド
 
 ```makefile
 # Makefile（WASMビルド部分）
 
-WASM_SRC  = src/wasm/main.c
-WASM_OUT  = dist/main.wasm
-JS_GLUE   = dist/main.js
+WASM_SRC = src/wasm/main.c
+JS_GLUE  = dist/main.js
 
 wasm:
 	emcc $(WASM_SRC) \
 	  -o $(JS_GLUE) \
 	  -s WASM=1 \
-	  -s EXPORTED_FUNCTIONS='["_init", "_on_hash_change"]' \
-	  -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
+	  -s EXPORTED_FUNCTIONS='["_frontend_boot","_frontend_open_route"]' \
+	  -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
 	  -s ALLOW_MEMORY_GROWTH=1 \
 	  -O2
 ```
@@ -252,32 +270,66 @@ wasm:
 
 ```c
 #include <emscripten.h>
-#include <string.h>
+#include <stdio.h>
 
-/* CSSバックエンドのDB変数を読み取り、DOMに反映する処理はJSグルー経由 */
+#define KEY_BUF_SIZE 64
+#define VAL_BUF_SIZE 128
+#define MAX_PROJECTS 16
+
+EM_JS(int, css_get_var, (const char *key, char *out, int out_size), {
+  const name = UTF8ToString(key);
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim()
+    .replace(/^"(.*)"$/, "$1");
+  if (!raw) return 0;
+  stringToUTF8(raw, out, out_size);
+  return 1;
+});
+
+EM_JS(void, ui_append_project, (const char *title, const char *category, const char *lang), {
+  const list = document.getElementById("project-list");
+  if (!list) return;
+  const card = document.createElement("article");
+  card.className = "project-card";
+  card.setAttribute("data-category", UTF8ToString(category));
+  card.innerHTML = "<h3>" + UTF8ToString(title) + "</h3><p>" + UTF8ToString(lang) + "</p>";
+  list.appendChild(card);
+});
 
 EMSCRIPTEN_KEEPALIVE
-void init(void) {
-    /* 起動時処理: URLハッシュを読み取りルーターに反映 */
-    EM_ASM({
-        const hash = window.location.hash.slice(1) || 'home';
-        const radio = document.getElementById('route-' + hash);
-        if (radio) radio.checked = true;
+void frontend_boot(void) {
+  char key[KEY_BUF_SIZE];
+  char title[VAL_BUF_SIZE];
+  char category[VAL_BUF_SIZE];
+  char lang[VAL_BUF_SIZE];
 
-        /* 狼煙通信のタイムスタンプを更新してキャッシュを無効化 */
-        const ts = Date.now();
-        document.documentElement.style.setProperty('--noro-ts', ts);
-    });
+  for (int i = 1; i <= MAX_PROJECTS; ++i) {
+    snprintf(key, sizeof(key), "--db-project-%d-title", i);
+    if (!css_get_var(key, title, sizeof(title))) {
+      break;
+    }
+
+    snprintf(key, sizeof(key), "--db-project-%d-category", i);
+    if (!css_get_var(key, category, sizeof(category))) {
+      snprintf(category, sizeof(category), "unknown");
+    }
+
+    snprintf(key, sizeof(key), "--db-project-%d-lang", i);
+    if (!css_get_var(key, lang, sizeof(lang))) {
+      snprintf(lang, sizeof(lang), "n/a");
+    }
+
+    ui_append_project(title, category, lang);
+  }
 }
 
 EMSCRIPTEN_KEEPALIVE
-void on_hash_change(void) {
-    /* ハッシュ変更時にルーターを同期 */
-    EM_ASM({
-        const hash = window.location.hash.slice(1) || 'home';
-        const radio = document.getElementById('route-' + hash);
-        if (radio) radio.checked = true;
-    });
+void frontend_open_route(const char *route) {
+  EM_ASM({
+    const routeName = UTF8ToString($0);
+    window.location.hash = "page-" + routeName;
+  }, route);
 }
 ```
 
@@ -288,10 +340,7 @@ void on_hash_change(void) {
 <script src="main.js"></script>
 <script>
   Module.onRuntimeInitialized = () => {
-    Module.ccall('init', null, [], []);
-    window.addEventListener('hashchange', () => {
-      Module.ccall('on_hash_change', null, [], []);
-    });
+    Module.ccall("frontend_boot", null, [], []);
   };
 </script>
 ```
@@ -398,9 +447,9 @@ GitHub PagesはHTTPSのため、Mixed Content回避に必須。
   <!-- C言語で静的生成した既存コンテンツ -->
 </div>
 
-<!-- 真のCCSS（WASM + CSSバックエンド） -->
+<!-- 真のCCSS（Cフロント + CSSバックエンド） -->
 <div id="true-ccss">
-  <!-- WASMが描画するコンテンツ -->
+  <!-- C (WASM) が描画し、CSSバックが判定するコンテンツ -->
 </div>
 ```
 
@@ -430,7 +479,7 @@ C-portfolio/
 │       └── main.c      新規: WASMフロントエンド
 ├── styles/
 │   ├── main.css        既存
-│   └── backend.css     新規: CSSバックエンド（DB・ルーター・認証・狼煙）
+│   └── backend.css     新規: CSSバックエンド（DB・ルーター・表示ゲート・狼煙）
 ├── proxmox/
 │   ├── log_receiver.c  新規: C CGI（狼煙受信）
 │   └── Makefile        新規
@@ -495,9 +544,9 @@ jobs:
 
 | フェーズ | 内容 | 成果物 |
 |---------|------|--------|
-| 1 | CSSバックエンド基盤（変数DB・ルーター） | backend.css 基本形 |
-| 2 | チェックボックス認証 | backend.css 認証追加 |
-| 3 | C WASM フロントエンド | src/wasm/main.c + Makefile更新 |
+| 1 | CSSバックエンド基盤（変数DB・ルーター・API化） | backend.css 基本形 |
+| 2 | 表示ゲート（認可演出） | backend.css ゲート追加 |
+| 3 | C WASM フロントエンド主実装 | src/wasm/main.c + Makefile更新 |
 | 4 | 狼煙通信 + PROXMOXサーバー構築 | proxmox/log_receiver.c + Apache設定 |
 | 5 | 切り替え機能 + 統合 | index.html 更新 |
 | 6 | 記事執筆 | Qiita: 「真のCCSSを実装してみた」 |
@@ -509,10 +558,10 @@ jobs:
 | 項目 | 内容 |
 |------|------|
 | HTTPS | PROXMOXをHTTPS化しないとMixed Contentでブロックされる |
-| キャッシュ | background-image URLは同一URLをキャッシュする。TSパラメータで回避 |
+| キャッシュ | background-image URLは同一URLをキャッシュする。イベントIDにバージョンを持たせて回避 |
 | 広告ブロッカー | 狼煙通信がuBlockなどでブロックされる可能性あり（記事に正直に書く） |
 | WASM CORS | GitHub Pagesから.wasmを読む場合はCORSヘッダーが必要（GitHub Pagesは自動付与） |
-| CSS変数の書き込み | CSSからCSSへの書き込み不可。C(WASM)→setProperty経由で行う |
+| CSS API境界 | Cは`--db-*`読取とhash/hidden control操作のみ。判定ロジックはCSS側に固定する |
 | CGI速度 | リクエストごとにプロセス生成。高負荷非想定（ポートフォリオなので問題なし） |
 | セキュリティ | CGIはQUERY_STRINGをログに書くだけ。コマンドインジェクション対策のためsystemやpopenは使わない |
 
@@ -526,9 +575,9 @@ jobs:
 4. CSS変数DB・チェックボックスルーター・狼煙通信の解説
 5. PROXMOXのサークルサーバーに C CGI を建てた話
 6. 実装してわかったこと（広告ブロッカー問題など）
-7. 「結局Cが全部やっている」という哲学的結論
+7. 「Cフロント / CSSバック」の境界をどこまで守れたかの検証
 
 ---
 
 *本企画書はCCSSアーキテクチャ研究会（情報技術研究部）により策定された。*
-*JavaScriptは一切使用しない予定だったが、Emscriptenのグルーコードが生成するJSについては見なかったことにする。*
+*ランタイムで使うJSはEmscriptenグルーに限定し、アプリケーションロジックはC側に保持する。*

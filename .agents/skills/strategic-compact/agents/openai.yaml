@@ -1,0 +1,8 @@
+interface:
+  display_name: "Strategic Compact (C-portfolio)"
+  short_description: "フェーズ境界でのcompact判断を支援"
+  brand_color: "#14B8A6"
+  default_prompt: "今の進捗でcompactすべきか、境界基準で判断して"
+policy:
+  allow_implicit_invocation: true
+

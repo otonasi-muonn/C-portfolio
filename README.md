@@ -1,79 +1,97 @@
-# 🚀 [プロジェクト名を入力]
+# C-portfolio
 
-<!-- ここにプロジェクトの簡単な説明を書きます。必要に応じてバッジ（CIステータスやライセンスなど）を貼るのもおすすめです -->
-このプロジェクトは、[何をするためのものか、どんな技術を使っているか] のためのベースプロジェクトです。
-
-## ✨ このテンプレートの使い方
-
-このリポジトリはテンプレートとして構成されています。以下の手順で新しいプロジェクトを素早く開始できます。
-
-1. 画面右上の **[Use this template]** ボタンをクリックし、**[Create a new repository]** を選択します。
-2. 新しいリポジトリの名前と詳細を入力し、リポジトリを作成します。
-3. 作成されたリポジトリをローカルにクローンします。
-
-### 🛠 生成後の初期セットアップ
-
-新しくリポジトリを作成した後は、以下の設定を行ってください。
-
-- [ ] **プロジェクト規模の設定**: 
-  - **Windows の場合**: エクスプローラーから `setup.bat` をダブルクリックして実行します。
-  - **Mac / Linux の場合**: ターミナルで `chmod +x setup.sh && ./setup.sh` を実行します。
-  *(※実行完了後、セットアップスクリプトは自動的に自壊してリポジトリから消去されます)*
-
-注意: このリポジトリは UTF-8 を標準で想定しています。Windows 環境で UTF-8 をそのまま使いたい場合、`setup.ps1`（PowerShell）を用意しました。
-
-- **Windows で UTF-8 を利用する推奨手順**:
-  1. PowerShell を管理者ではない通常ユーザーで開きます。
-  2. このリポジトリのルートで以下を実行します。
-```powershell
-powershell -ExecutionPolicy Bypass -File .\setup.ps1
-```
-  3. プロンプトに従って `1` または `2` を入力してください。
-
-  備考: すでに Windows の「Beta: Use Unicode UTF-8」を有効にしている場合でも、再起動やサインアウトが必要なことがあります。
-- [ ] **ラベルの移行**: Issueのラベルを引き継ぐため、ターミナルで以下のコマンドを実行してください（※要 GitHub CLI）。
-  ```bash
-  gh label clone otonasi-muonn/template-repo --force
-  ```
-- [ ] **プロジェクト情報の更新**: この `README.md` のタイトルと説明文を、あなたのプロジェクトの内容に書き換えてください。
-- [ ] **AIへの指示の更新**: `.github/copilot-instructions.md` の `Project Specific Rules` に、このプロジェクト固有のルールを追記してください。
-- [ ] **ライセンスの確認**: `LICENSE` ファイルの年や作者名を確認し、必要に応じて更新してください。
-- [ ] **環境変数の設定**: `.env.example` をコピーして `.env` を作成し、必要なキーを設定してください（※環境変数を使用する場合）。
+C言語で静的HTMLを生成し、CSSで動的UIを実現するポートフォリオサイトです。  
+JavaScriptに依存せず、`make` ベースでローカル開発とGitHub Pages公開を行います。
 
 ---
 
-## 💻 開発環境の構築手順
+## ドキュメント
 
-<!-- プロジェクトをローカルで動かすための具体的なコマンドなどを記述します。以下は例ですので、使用する言語に合わせて書き換えてください -->
+主要な設計資料は `docs/` を参照してください。
 
-1. 依存関係のインストール
-   ```bash
-   # 例: npm install / pip install -r requirements.txt など
-   ```
+| ドキュメント | 内容 |
+|------------|------|
+| [`docs/_complete.md`](docs/_complete.md) | 企画全体の背景・技術スタック・機能一覧 |
+| [`docs/DD.md`](docs/DD.md) | 実装詳細（データモデル、描画ルール、CSS仕様） |
+| [`docs/20260401_ccss_v2_proposal.md`](docs/20260401_ccss_v2_proposal.md) | Cフロント / CSSバック方針の拡張提案 |
 
-2. 開発サーバーの起動
-   ```bash
-   # 例: npm run dev / python main.py など
-   ```
+---
 
-## 📁 主要なディレクトリ構成
+## 開発運用ガイド（TAKT / ECC）
 
-<!-- チームメンバーや未来の自分が迷わないよう、主要なフォルダの役割を書いておくと親切です -->
+`.Myrepository` と同じく、運用ガイドを `docs/Wiki/` に集約しています。
 
-```text
-.
-├── .github/          # GitHub Actions ワークフローと Issue/PR テンプレート
-├── docs/             # ドキュメント類
-├── src/              # アプリケーションのソースコード
-├── tests/            # テストコード
-└── README.md         # このファイル
+| ドキュメント | 内容 |
+|------------|------|
+| [TAKT ガイド](docs/Wiki/takt-guide.md) | TAKT のインストール・使い方・ピース運用（C-portfolio向け） |
+| [ECC ガイド](docs/Wiki/ecc-guide.md) | Everything Claude Code と Skills 管理の運用手順 |
+| [ベストプラクティスガイド](docs/Wiki/best-practice-guide.md) | C-portfolio で守る実装・検証・レビューの実践ルール |
+
+---
+
+## 開発環境の構築
+
+### 前提ツール
+
+- `gcc`（C11対応）
+- `make`
+- `git`
+- `gh`（任意: ラベル同期などで利用）
+
+### セットアップ手順
+
+1. リポジトリを取得します。
+
+```bash
+git clone <YOUR_REPOSITORY_URL>
+cd C-portfolio
 ```
 
-## 🤝 コントリビューション
+2. ビルドとHTML生成を実行します。
 
-このプロジェクトへの貢献（バグ報告や機能追加など）については、[CONTRIBUTING.md](CONTRIBUTING.md) のガイドラインをご一読ください。
-また、健全なコミュニティを維持するため、[行動規範 (CODE_OF_CONDUCT.md)](CODE_OF_CONDUCT.md) への準拠をお願いしています。
+```bash
+make all
+```
 
-## 📄 ライセンス
+3. 生成物を確認します。
+
+```text
+dist/index.html
+dist/main.css
+```
+
+---
+
+## よく使うコマンド
+
+| コマンド | 内容 |
+|---------|------|
+| `make build` | `generator` バイナリをコンパイル |
+| `make generate` | `dist/index.html` を生成し、CSSをコピー |
+| `make all` | `build` + `generate` をまとめて実行 |
+| `make clean` | `generator` と `dist/` を削除 |
+
+---
+
+## ファイル・ディレクトリ説明
+
+| パス | 説明 |
+|-----|------|
+| `src/` | C言語のジェネレーター本体（`main.c`, `render.c`, `data.c` など） |
+| `styles/main.css` | UIスタイルとCSS状態管理ロジック |
+| `dist/` | ビルド生成物（Git管理対象外） |
+| `.agents/` | ECC運用のための最小Skills構成（有効スキルと候補プール） |
+| `.takt/` | TAKTの最小運用設定（ログ類はコミットしない） |
+| `.github/workflows/deploy.yml` | GitHub Actions による Pages デプロイ |
+| `docs/` | 設計・提案・改善記録 |
+
+---
+
+## コントリビューション
+
+貢献時は [CONTRIBUTING.md](CONTRIBUTING.md) を確認してください。  
+コミュニティ参加時は [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) の遵守をお願いします。
+
+## ライセンス
 
 このプロジェクトは [MIT License](LICENSE) のもとで公開されています。

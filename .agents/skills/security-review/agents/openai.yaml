@@ -1,0 +1,8 @@
+interface:
+  display_name: "Security Review (C-portfolio)"
+  short_description: "snprintf/html_escape/危険APIの観点で安全性確認"
+  brand_color: "#EF4444"
+  default_prompt: "C-portfolioの出力安全性と危険API混入をレビューして"
+policy:
+  allow_implicit_invocation: true
+
