@@ -27,6 +27,16 @@ JavaScriptに依存せず、`make` ベースでローカル開発とGitHub Pages
 | [ECC ガイド](docs/Wiki/ecc-guide.md) | Everything Claude Code と Skills 管理の運用手順 |
 | [ベストプラクティスガイド](docs/Wiki/best-practice-guide.md) | C-portfolio で守る実装・検証・レビューの実践ルール |
 
+### TAKT 最短運用（3コマンド）
+
+```bash
+takt
+takt run
+takt list
+```
+
+最後は必ず `make all` でローカル検証してください。
+
 ---
 
 ## 開発環境の構築
