@@ -9,14 +9,21 @@
 
 :root {
   /* カラーパレット */
-  --color-bg:       #0d1117;
-  --color-surface:  #161b22;
-  --color-border:   #30363d;
-  --color-text:     #e6edf3;
-  --color-text-sub: #8b949e;
-  --color-accent:   #58a6ff;
-  --color-accent-hover: #79c0ff;
-  --color-tag:      #1f6feb;
+  --color-bg:           #0c0d12;
+  --color-surface:      #161820;
+  --color-surface-2:    #1e2030;
+  --color-border:       #2a2d42;
+  --color-border-hover: #3d4168;
+
+  --color-text:         #e8eaf6;
+  --color-text-sub:     #7c7fa8;
+
+  --color-accent:       #ff6b81;
+  --color-accent-hover: #ff8fa5;
+  --color-accent-dim:   rgba(255, 107, 129, 0.12);
+
+  --color-tag-bg:       rgba(255, 107, 129, 0.12);
+  --color-tag-text:     #ff8fa5;
 
   /* フォント */
   --font-sans: "Inter", "Noto Sans JP", system-ui, -apple-system, sans-serif;
@@ -30,7 +37,10 @@
   --space-xl:  4rem;
 
   /* レイアウト */
-  --max-width: 64rem;
+  --max-width: 68rem;
+
+  /* トランジション */
+  --transition: 0.2s ease;
 }
 
 html {
@@ -43,12 +53,15 @@ body {
   color: var(--color-text);
   line-height: 1.7;
   min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 20% 60%, rgba(255, 107, 129, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 20%, rgba(100, 120, 255, 0.04) 0%, transparent 70%);
 }
 
 a {
   color: var(--color-accent);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color var(--transition);
 }
 
 a:hover {
@@ -63,12 +76,32 @@ a:hover {
 }
 
 .section-title {
-  font-size: 1.75rem;
   font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-accent);
   margin-bottom: var(--space-lg);
-  padding-bottom: var(--space-sm);
-  border-bottom: 2px solid var(--color-accent);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.section-title::before {
+  content: "";
   display: inline-block;
+  width: 1.5rem;
+  height: 1px;
+  background-color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--color-border), transparent);
 }
 
 /* ===== ヘッダー・ナビ ===== */
@@ -76,7 +109,9 @@ a:hover {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--color-surface);
+  background-color: rgba(12, 13, 18, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -86,14 +121,15 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-md) var(--space-lg);
+  padding: 0.875rem var(--space-lg);
 }
 
 .nav-logo {
   font-family: var(--font-mono);
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--color-text);
+  letter-spacing: -0.02em;
 }
 
 .nav-logo:hover {
@@ -107,14 +143,17 @@ a:hover {
 }
 
 .nav-links a {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
+  font-family: var(--font-mono);
   color: var(--color-text-sub);
-  transition: color 0.2s ease;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color var(--transition);
 }
 
 .nav-links a:hover {
-  color: var(--color-accent);
+  color: var(--color-text);
 }
 
 /* ===== プロフィール ===== */
@@ -123,28 +162,51 @@ a:hover {
 }
 
 .profile-name {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
   margin-bottom: var(--space-xs);
+  color: var(--color-text);
+  background: linear-gradient(130deg, var(--color-text) 30%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.profile-name-sub {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-text-sub);
+  margin-bottom: var(--space-sm);
+  letter-spacing: 0.02em;
 }
 
 .profile-affiliation {
+  font-size: 0.875rem;
   color: var(--color-text-sub);
-  font-size: 0.9rem;
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
+  padding-left: var(--space-sm);
+  border-left: 2px solid var(--color-border);
 }
 
 .profile-tagline {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   color: var(--color-accent);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding: var(--space-xs) var(--space-md);
+  background-color: var(--color-accent-dim);
+  border-left: 2px solid var(--color-accent);
+  display: inline-block;
 }
 
 .profile-bio {
-  max-width: 40rem;
+  max-width: 46rem;
   color: var(--color-text-sub);
-  line-height: 1.8;
+  line-height: 1.9;
+  font-size: 0.9375rem;
+  margin-bottom: var(--space-lg);
 }
 
 .social-links {
@@ -155,18 +217,22 @@ a:hover {
 }
 
 .social-link {
-  display: inline-block;
-  padding: var(--space-xs) var(--space-md);
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.875rem;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  font-size: 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
   color: var(--color-text-sub);
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition: border-color var(--transition), color var(--transition),
+              background-color var(--transition);
 }
 
 .social-link:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
+  background-color: var(--color-accent-dim);
 }
 
 /* ===== スキル ===== */
@@ -181,31 +247,34 @@ a:hover {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: var(--space-md);
-  transition: border-color 0.2s ease;
+  transition: border-color var(--transition);
 }
 
 .skill-card:hover {
-  border-color: var(--color-accent);
+  border-color: var(--color-border-hover);
 }
 
 .skill-name {
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.95rem;
   margin-bottom: var(--space-xs);
+  color: var(--color-text);
 }
 
 .skill-level {
   display: inline-block;
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  background-color: var(--color-tag);
-  border-radius: 12px;
-  color: var(--color-text);
+  font-size: 0.68rem;
+  padding: 2px 10px;
+  background-color: var(--color-tag-bg);
+  border-radius: 9999px;
+  color: var(--color-tag-text);
   margin-bottom: var(--space-sm);
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
 }
 
 .skill-desc {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--color-text-sub);
 }
 
@@ -213,13 +282,28 @@ a:hover {
 .career-section {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-lg) var(--space-lg) 0;
+  padding: var(--space-md) var(--space-lg) 0;
 }
 
 .timeline {
   position: relative;
-  padding-left: var(--space-lg);
-  border-left: 2px solid var(--color-border);
+  padding-left: calc(var(--space-lg) + 2px);
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--color-accent) 8%,
+    var(--color-border) 85%,
+    transparent 100%
+  );
 }
 
 .timeline-item {
@@ -230,36 +314,47 @@ a:hover {
 .timeline-item::before {
   content: "";
   position: absolute;
-  left: calc(-1 * var(--space-lg) - 5px);
+  left: calc(-1 * var(--space-lg) - 6px);
   top: 6px;
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background-color: var(--color-accent);
-  border: 2px solid var(--color-bg);
+  background-color: var(--color-bg);
+  border: 2px solid var(--color-border);
+  transition: border-color var(--transition), background-color var(--transition);
+}
+
+.timeline-item:hover::before {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent-dim);
 }
 
 .timeline-date {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--color-accent);
+  font-size: 0.72rem;
+  color: var(--color-text-sub);
+  margin-bottom: 0.2rem;
+  letter-spacing: 0.05em;
 }
 
 .timeline-title {
-  font-size: 1rem;
-  margin: var(--space-xs) 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+  color: var(--color-text);
 }
 
 .timeline-desc {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--color-text-sub);
+  line-height: 1.75;
 }
 
 /* ===== プロジェクト ===== */
 .projects-section {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-lg);
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
 }
 
 .filter-container {
@@ -270,7 +365,7 @@ a:hover {
 .project-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
 }
 
 .filter-radio,
@@ -289,18 +384,20 @@ a:hover {
 .filter-label {
   display: inline-flex;
   align-items: center;
-  padding: var(--space-xs) var(--space-md);
+  padding: 0.25rem 0.75rem;
   border: 1px solid var(--color-border);
-  border-radius: 999px;
-  font-size: 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
   color: var(--color-text-sub);
   cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  transition: border-color var(--transition), color var(--transition),
+              background-color var(--transition);
 }
 
 .filter-label:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  border-color: var(--color-border-hover);
+  color: var(--color-text);
 }
 
 .filter-radio:focus-visible + .filter-label,
@@ -311,8 +408,8 @@ a:hover {
 
 .filter-radio:checked + .filter-label {
   border-color: var(--color-accent);
-  color: var(--color-text);
-  background-color: rgba(88, 166, 255, 0.15);
+  color: var(--color-accent);
+  background-color: var(--color-accent-dim);
 }
 
 .projects-grid {
@@ -326,16 +423,37 @@ a:hover {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: var(--space-md);
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition: border-color var(--transition), transform var(--transition),
+              background-color var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.project-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, var(--color-accent), transparent);
+  opacity: 0;
+  transition: opacity var(--transition);
 }
 
 .project-card:hover {
-  border-color: var(--color-accent);
+  border-color: var(--color-border-hover);
+  background-color: var(--color-surface-2);
   transform: translateY(-2px);
 }
 
+.project-card:hover::before {
+  opacity: 1;
+}
+
 .project-title {
-  font-size: 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
   margin-bottom: var(--space-sm);
 }
 
@@ -349,27 +467,30 @@ a:hover {
 
 .project-meta {
   display: flex;
-  gap: var(--space-md);
+  gap: var(--space-sm);
   margin-bottom: var(--space-sm);
-  font-size: 0.8rem;
+  align-items: center;
 }
 
 .project-period {
   font-family: var(--font-mono);
+  font-size: 0.72rem;
   color: var(--color-text-sub);
 }
 
 .project-category {
-  padding: 1px 8px;
-  background-color: var(--color-tag);
-  border-radius: 12px;
-  font-size: 0.75rem;
-  color: var(--color-text);
+  padding: 1px 10px;
+  background-color: var(--color-tag-bg);
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--color-tag-text);
 }
 
 .project-desc {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--color-text-sub);
+  line-height: 1.75;
 }
 
 .detail-toggle-label {
@@ -377,14 +498,21 @@ a:hover {
   align-items: center;
   gap: var(--space-xs);
   margin-top: var(--space-sm);
-  font-size: 0.8rem;
-  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--color-text-sub);
   cursor: pointer;
+  transition: color var(--transition);
+}
+
+.detail-toggle-label:hover {
+  color: var(--color-accent);
 }
 
 .detail-toggle-label::before {
   content: "▸";
   transition: transform 0.2s ease;
+  color: var(--color-accent);
 }
 
 .detail-toggle:checked + .detail-toggle-label::before {
@@ -433,14 +561,27 @@ a:hover {
 
 .footer-generated {
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   color: var(--color-accent);
   margin-bottom: var(--space-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.footer-generated::before,
+.footer-generated::after {
+  content: "//";
+  color: var(--color-border);
+  font-size: 0.9em;
 }
 
 .footer-build {
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
   color: var(--color-text-sub);
+  opacity: 0.55;
 }
 
 /* ===== レスポンシブ ===== */
@@ -452,6 +593,7 @@ a:hover {
   .global-nav {
     flex-direction: column;
     gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
   }
 
   .nav-links {
@@ -459,7 +601,7 @@ a:hover {
   }
 
   .profile-name {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
   }
 
   .skills-grid,
@@ -469,6 +611,7 @@ a:hover {
 
   .career-section,
   .projects-section {
-    padding: var(--space-md);
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
   }
 }

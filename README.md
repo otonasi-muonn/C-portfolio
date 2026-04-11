@@ -13,7 +13,9 @@ JavaScriptに依存せず、`make` ベースでローカル開発とGitHub Pages
 |------------|------|
 | [`docs/_complete.md`](docs/_complete.md) | 企画全体の背景・技術スタック・機能一覧 |
 | [`docs/DD.md`](docs/DD.md) | 実装詳細（データモデル、描画ルール、CSS仕様） |
-| [`docs/20260401_ccss_v2_proposal.md`](docs/20260401_ccss_v2_proposal.md) | Cフロント / CSSバック方針の拡張提案 |
+| [`docs/portfolio_data_template.md`](docs/portfolio_data_template.md) | データ記入テンプレート（`src/data.c` の全項目・記入例・推奨項目） |
+| [`docs/log_design.md`](docs/log_design.md) | ログ設計（操作・イベントごとのログレベル定義と実装ガイドライン） |
+| [`docs/test_design.md`](docs/test_design.md) | テスト設計（テスト対象・方針・カバレッジ目標） |
 
 ---
 

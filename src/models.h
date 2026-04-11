@@ -13,7 +13,8 @@ typedef struct {
 
 /* プロフィール情報 */
 typedef struct {
-  const char *name;
+  const char *name;      /* メイン表示名（ニックネーム等） */
+  const char *name_sub;  /* サブ表示名（本名等） */
   const char *affiliation;
   const char *tagline;
   const char *bio;

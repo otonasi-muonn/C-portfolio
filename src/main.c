@@ -8,9 +8,10 @@
 int main(void) {
   FILE *fp = fopen(OUTPUT_PATH, "w");
   if (!fp) {
-    fprintf(stderr, "エラー: %s を開けません\n", OUTPUT_PATH);
+    fprintf(stderr, "[ERROR] %s を開けません\n", OUTPUT_PATH);
     return EXIT_FAILURE;
   }
+  fprintf(stdout, "[INFO] 出力先を開きました: %s\n", OUTPUT_PATH);
 
   /* HTML ドキュメント開始 */
   fputs("<!DOCTYPE html>\n", fp);
@@ -38,6 +39,6 @@ int main(void) {
   fputs("</body>\n</html>\n", fp);
 
   fclose(fp);
-  printf("生成完了: %s\n", OUTPUT_PATH);
+  printf("[INFO] 生成完了: %s\n", OUTPUT_PATH);
   return EXIT_SUCCESS;
 }

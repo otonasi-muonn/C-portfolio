@@ -9,7 +9,12 @@
 /* ---- HTMLエスケープ ---- */
 void html_escape(const char *src, char *dest, size_t dest_size) {
   size_t di = 0;
-  if (!src || !dest || dest_size == 0) return;
+  if (!dest || dest_size == 0) return;
+  if (!src) {
+    fprintf(stderr, "[WARN] html_escape に NULL ポインタが渡されました\n");
+    dest[0] = '\0';
+    return;
+  }
 
   for (size_t si = 0; src[si] != '\0' && di < dest_size - 1; si++) {
     const char *rep = NULL;
@@ -45,7 +50,7 @@ static int checked_snprintf(char *buf, size_t buf_size,
   va_list args;
 
   if (!buf || buf_size == 0 || !context || !fmt) {
-    fprintf(stderr, "エラー: checked_snprintf の引数が不正です\n");
+    fprintf(stderr, "[ERROR] checked_snprintf の引数が不正です\n");
     return 0;
   }
 
@@ -54,14 +59,14 @@ static int checked_snprintf(char *buf, size_t buf_size,
   va_end(args);
 
   if (ret < 0) {
-    fprintf(stderr, "エラー: %s の snprintf で失敗しました\n", context);
+    fprintf(stderr, "[ERROR] %s の snprintf で失敗しました\n", context);
     buf[0] = '\0';
     return 0;
   }
 
   if ((size_t)ret >= buf_size) {
     fprintf(stderr,
-            "エラー: %s の snprintf がバッファ上限を超えました "
+            "[WARN] %s の snprintf がバッファ上限を超えました "
             "(buf=%zu, required=%d)\n",
             context, buf_size, ret);
     buf[buf_size - 1] = '\0';
@@ -132,10 +137,11 @@ void render_header(FILE *fp, const SiteConfig *config) {
 /* ---- プロフィールセクション ---- */
 void render_profile(FILE *fp, const Profile *prof,
                     const SocialLink *links, size_t links_count) {
-  char name[ESC_SIZE], aff[ESC_SIZE], tag[ESC_SIZE], bio[ESC_SIZE];
+  char name[ESC_SIZE], name_sub[ESC_SIZE], aff[ESC_SIZE], tag[ESC_SIZE], bio[ESC_SIZE];
   char buf[BUF_SIZE];
 
   esc(prof->name, name, sizeof(name));
+  esc(prof->name_sub ? prof->name_sub : "", name_sub, sizeof(name_sub));
   esc(prof->affiliation, aff, sizeof(aff));
   esc(prof->tagline, tag, sizeof(tag));
   esc(prof->bio, bio, sizeof(bio));
@@ -145,11 +151,12 @@ void render_profile(FILE *fp, const Profile *prof,
     "  <h2 class=\"section-title\">About</h2>\n"
     "  <div class=\"profile\">\n"
     "    <h3 class=\"profile-name\">%s</h3>\n"
+    "    <p class=\"profile-name-sub\">%s</p>\n"
     "    <p class=\"profile-affiliation\">%s</p>\n"
     "    <p class=\"profile-tagline\">%s</p>\n"
     "    <p class=\"profile-bio\">%s</p>\n"
     "  </div>\n",
-    name, aff, tag, bio)) {
+    name, name_sub, aff, tag, bio)) {
     return;
   }
   fputs(buf, fp);
