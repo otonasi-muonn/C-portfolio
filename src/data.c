@@ -14,11 +14,16 @@ const Profile profile = {
   .name_sub    = "田中 那於斗",
   .affiliation = "福岡工業大学 情報工学部 情報工学科 2年 / 情報技術研究部(じょぎ)",
   .tagline     = "止まらず走り続けることが\"普通\"でいること",
-  .bio         = "福岡工業大学でWebからシステム・モバイルまで幅広く開発を手がけています。"
-                 "TypeScript/React/Next.jsによるモダンWebアプリ、Node.jsによる非同期処理、"
-                 "VS Code拡張「Code Grimoire」、C言語(WebAssembly)・Rust・Dart/Flutterなど"
-                 "多様な技術スタックで実践的なプロダクトを継続的に制作しています。"
-                 "Web Speed Hackathon 2026にも参加するなど、常に新しい技術領域に挑戦中です。"
+  .bio         = "C言語が好きで、このサイトもCでHTMLを書き出して作っています。"
+                 "フロントエンドやバックエンドといった分け方にはあまりこだわらず、"
+                 "どういう仕組みで動くのか、どう設計するのか、なぜその技術を選ぶのかを考えるのが好きです。"
+                 "以前から、使う人や状況に合わせて画面の内容や構成が変わる「Adaptive UI」に興味があり、"
+                 "LTで発表したこともあります。"
+                 "最近も小さな実験をしています。"
+                 "AIのコーディングエージェントと一緒に開発することも多く、"
+                 "作って確かめるサイクルの回し方にも興味があります。"
+                 "心理学や経済学など、情報工学の外の分野にも関心があります。"
+                 "学生コミュニティでは運営やイベントの企画にも関わっています。"
 };
 
 /* ソーシャルリンク */
@@ -57,7 +62,7 @@ const CareerEvent career_events[] = {
     .description = "母校・博多青松高校で体験入学のお手伝い。高大連携制度の紹介を中学生・保護者の前で行いました" },
   { .date = "2025-08-15/16/17",
     .title = "ブラッシュアップソン",
-    .description = "部内で先輩たちの過去作品をブラッシュアップするイベントを開催。チームとして優秀賞を受賞！" },
+    .description = "部内で先輩たちの過去作品をブラッシュアップするイベントに参加。チームとして優秀賞を受賞！" },
   { .date = "2025-08-20",
     .title = "StepByCodeさんのもくもく会参加",
     .description = "じょぎとも関わりのある、StepByCodeさんのもくもく会に参加させていただきました！" },
@@ -112,57 +117,75 @@ const CareerEvent career_events[] = {
   { .date = "2026-04-01",
     .title = "2年生 & 幹部就任",
     .description = "2年生に進級すると同時に、じょぎの幹部に就任しました" },
+  { .date = "2026-04-26",
+    .title = "ゆるハッカソン事前講座",
+    .description = "ハッカソン本番に向けた事前講座で使う、Web班向けの教材サイトを作りました。" },
+  { .date = "2026-08-17/09-05",
+    .title = "Tornado2026",
+    .description = "学生ハッカソン「Tornado2026」に、チームのPM（プロジェクトマネージャー）として参加しました。"
+                   "8月17日がキックオフ、9月5日が最終発表でした。" },
+  { .date = "2026-09-12/13",
+    .title = "ちゅらデータのサマーインターン",
+    .description = "AIエージェント開発を体験する2日間のインターンシップに、沖縄会場で参加しました。" },
 };
 const size_t career_events_count = sizeof(career_events) / sizeof(career_events[0]);
 
-/* プロジェクト（otonasi-muonn GitHub 公開リポジトリ、pushed_at 降順 上位8件） */
+/* プロジェクト（閲覧者が確認できる代表作を新しい順に掲載） */
 const Project projects[] = {
+  { .title    = "AI時代に、なぜ今さらC言語なのか",
+    .url      = "https://otonasi-muonn.github.io/c-lang-lt-slidev/",
+    .period   = "2026-09",
+    .category = "C",
+    .description = "ハックツコミュの「自分の推し技術について語りたいよねの会」向けに作った15分の発表資料です。"
+                   "普段はTypeScriptを使う立場から、Cが何のために作られ、"
+                   "どんな条件ならいまの技術選定に戻ってくるのかを話す構成にしました。"
+                   "デモではCからコンパイルしたWebAssemblyを実際に動かしています。" },
+
+  { .title    = "libslide",
+    .url      = "https://github.com/otonasi-muonn/libslide",
+    .period   = "2026-05",
+    .category = "C",
+    .description = "C/C++のアプリに組み込んで、実行中にコードからスライドを組み立てて表示するライブラリです。"
+                   "「スライド版SQLite」を目標に、公開するヘッダーを1つに絞り、"
+                   "外部ライブラリを使わずOSの描画機能だけで動かしています。"
+                   "AIのコーディングエージェントと開発し、いまはWindows版を公開しています。" },
+
   { .title    = "C-portfolio",
     .url      = "https://github.com/otonasi-muonn/C-portfolio",
     .period   = "2026-03",
     .category = "C",
-    .description = "C言語でHTMLを生成するポートフォリオサイト。makeベースでローカル開発・GitHub Pages公開に対応し、JavaScriptに依存しないCSSオンリーのUIを実現。" },
+    .description = "このサイトは、好きなC言語をあえてWebに持ち込んで作りました。"
+                   "Cのプログラムがデータから静的なHTMLを書き出し、"
+                   "絞り込みや詳細の開閉はJavaScriptを使わず、CSSの :checked と :has() で切り替えています。"
+                   "GitHub Actionsでビルドして公開しています。" },
 
   { .title    = "megalo2026",
     .url      = "https://github.com/otonasi-muonn/megalo2026",
     .period   = "2026-03",
     .category = "TypeScript",
-    .description = "スワイプで風を起こしキャラクターを運ぶ物理演算アクション＋ステージ作成・共有ゲーム。React＋Viteのフロントとホノバックエンドを持つモノレポ構成。" },
+    .description = "スワイプで風を起こしてキャラクターを運ぶ物理演算アクションに、"
+                   "ステージを作って共有する機能を組み合わせたブラウザゲームです。"
+                   "4人チームで開発し、自分はアプリの実装のほか、"
+                   "Reactのファイル1つをCとCSSに変換する「CCSS」トランスパイラの試作も進めました。" },
 
   { .title    = "Code-Grimoire",
     .url      = "https://github.com/otonasi-muonn/Code-Grimoire",
     .period   = "2026-02",
     .category = "TypeScript",
-    .description = "コードを魔方陣に！！！" },
-
-  { .title    = "Code-Grimoire-Core",
-    .url      = "https://github.com/otonasi-muonn/Code-Grimoire-Core",
-    .period   = "2026-03",
-    .category = "Other",
-    .description = "コード依存関係を魔方陣として可視化するVS Code拡張のコアエンジン。PixiJS＋d3-forceで数万ファイル規模でも60fps描画を実現するプラグイン方式の基盤。" },
-
-  { .title    = "otonasi-muonn",
-    .url      = "https://github.com/otonasi-muonn/otonasi-muonn",
-    .period   = "2025-08",
-    .category = "Other",
-    .description = "GitHubプロフィールリポジトリ。GitHub統計・言語割合・Streak・トロフィーなどを表示するREADMEを管理。" },
-
-  { .title    = "phase4_collelis",
-    .url      = "https://github.com/otonasi-muonn/phase4_collelis",
-    .period   = "2025-12",
-    .category = "TypeScript",
-    .description = "Next.js（App Router）・TypeScript・Tailwind CSSを用いて構築したWebアプリケーション。" },
+    .description = "コードを魔方陣に！！！　"
+                   "TypeScript / JavaScriptのファイル同士の import のつながりを、"
+                   "魔方陣のような1枚の図にするVS Code拡張です。"
+                   "依存はTypeScript Compiler APIで解析し、描画はWebGLで行います。"
+                   "配置の計算はWeb Workerに分けて、画面が固まらないようにしました。"
+                   "AIと一緒に開発するとファイルが増えて全体像を見失いがちという悩みに向けて作っています。" },
 
   { .title    = "dameninngenF",
     .url      = "https://github.com/otonasi-muonn/dameninngenF",
     .period   = "2025-10",
     .category = "TypeScript",
-    .description = "自身の「ダメ人間エピソード」を投稿し、いいね数でランキングされるSNSアプリ。TypeScript・Next.js・Reactで実装。" },
-
-  { .title    = "laratter",
-    .url      = "https://github.com/otonasi-muonn/laratter",
-    .period   = "2025-08",
-    .category = "Blade",
-    .description = "Laravelを用いたTwitterクローンWebアプリ。ブックマーク機能（多対多リレーション）の設計・実装を中心に取り組んだ学習課題。" },
+    .description = "日常のちょっとした失敗を「ダメ人間エピソード」として投稿し、"
+                   "いいねでランキングするWebアプリです。"
+                   "4人チームで参加したハッカソンで作りました。"
+                   "入力したエピソードのダメ人間度をAIが診断する機能もあります。" },
 };
 const size_t projects_count = sizeof(projects) / sizeof(projects[0]);
